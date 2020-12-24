@@ -58,11 +58,11 @@ def getInput():
 	# List all labels again
 	for idx, label in enumerate(allLabels):
 		print(idx, label.name)
-	print(len(allLabels), 'None')
+	print(allLabels.totalCount, 'None')
 	# Select the given label
 	try:
 		elabel = allLabels[int(input())]
-	except KeyError:
+	except IndexError:
 		elabel = None
 	# Write the the sheet
 	print('Running...')
