@@ -2,6 +2,8 @@
 
 To use issue writer, simply make a `config.py` file in the same directory and add a string varible `TOKEN` with your github token. Visit [here](https://docs.github.com/en/free-pro-team@latest/github/authenticating-to-github/creating-a-personal-access-token) to set up an access token. 
 
+You will also need to install PyGithub with `pip install PyGithub` and XlsxWriter with `pip install XlsxWriter`
+
 ### Running issueWriter
 
 When run, the issueWriter should ask you to select a repo by number out of your existing repos. It will then ask you for a label to filter by (usually bug) and a label to exclude (usually verified). It will then write all of the issues to an xlsx file called "issueSheet".

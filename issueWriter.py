@@ -14,11 +14,14 @@ cell_format = wb.add_format({'bold': True, 'bg_color': '#d7dbd8'})
 famBot = g.get_repo('skyler1ackerman/famBot')
 vantiq = g.get_repo('Vantiq/iqtools')
 
-def getIssuesByLabel(repo, ilabel, elabel, state):
+LABEL = 'label'
+MILESTONE = 'milestone'
+
+def getIssuesByLabel(repo, ilabel, elabel, state='all', milestone='none'):
 	if elabel:
-		return [i for i in repo.get_issues(state=state) if ilabel in i.labels and elabel not in i.labels]
-	else:
-		return [i for i in repo.get_issues(state=state) if ilabel in i.labels]
+		return [i for i in repo.get_issues(state=state, labels=[ilabel], direction='asc') if elabel not in i.labels]
+	else:	
+		return [i for i in repo.get_issues(state=state, labels=[ilabel], direction='asc')]
 
 def writeToSheet(issueList):
 	for i in range(0, len(issueList)*3, 3):
@@ -38,35 +41,58 @@ def writeToSheet(issueList):
 		ws.write(i+1, 6, 'Stats (Pass/Fail/Blocked)')
 		ws.write(i+1, 7, 'Issue #')
 
-def getInput():
+def input_checker(func):
+	def input_checker_wrapper(*args, **kwargs):
+		while True:
+			try:
+				return func(*args, **kwargs)
+				break
+			except (IndexError, ValueError, KeyError):
+				print('Invalid input, please try again')
+	return input_checker_wrapper
+
+@input_checker
+def getRepo():
 	# Prompt for repo
-	print('Select a repo')
+	print('Select a repository')
 	# Show all repos
 	for idx, repo in enumerate(allRepos:=g.get_user().get_repos()):
 		print(idx, repo.name)
-	# Select the given repo
-	repo = allRepos[int(input())]
-	# Prompt for label to include
-	print('Select a label to filter by')
-	# List all labels
-	for idx, label in enumerate(allLabels:=repo.get_labels()):
-		print(idx, label.name)
-	# Select the given label
-	ilabel = allLabels[int(input())]
-	# Prompt for label  to exclude
-	print('Select a label to exclude')
-	# List all labels again
-	for idx, label in enumerate(allLabels):
-		print(idx, label.name)
-	print(allLabels.totalCount, 'None')
-	# Select the given label
-	try:
-		elabel = allLabels[int(input())]
-	except IndexError:
-		elabel = None
+	return allRepos[int(input())]
+
+@input_checker
+def getRepoObject(repo, repoObject, prompt):
+	print(prompt)
+	functDict = {LABEL: repo.get_labels(), MILESTONE: repo.get_milestones(state='all')}
+	for idx, obj in enumerate(allObjects:=functDict[repoObject]):
+		try:
+			print(idx, obj.name)
+		except AttributeError:
+			print(idx, obj.title)
+	print(allObjects.totalCount, 'None')
+	objIndex = int(input())
+	if objIndex == allObjects.totalCount:
+		return None
+	return allObjects[objIndex]
+
+@input_checker
+def getYesNo(prompt):
+	print(prompt, '(Y/N)')
+	yesNoDict = {'y': True, 'n': False}
+	return yesNoDict[input().lower()]
+
+def getInput():
+	# Get the base repo
+	repo = getRepo()
+	ilabel = getRepoObject(repo, LABEL, 'Select a label to filter by')
+	elabel = getRepoObject(repo, LABEL, 'Select a label to exclude')
+	if getYesNo('Would you like to sort by a milestone?'):
+		milestone = getRepoObject(repo, MILESTONE, 'Select a milestone to filter by')
+	else:
+		milestone = None
 	# Write the the sheet
 	print('Running...')
-	writeToSheet(getIssuesByLabel(repo, ilabel, elabel, 'all'))
+	writeToSheet(getIssuesByLabel(repo=repo, ilabel=ilabel, elabel=elabel, state='all', milestone=milestone))
 	print('Done!')
 
 getInput()
