@@ -8,8 +8,6 @@ import xlsxwriter
 # If you use TFA you need to auth using an access token instead of username/password
 g = Github(TOKEN)
 # Init a WorkBook
-wb = xlsxwriter.Workbook('issueSheet.xlsx')
-cell_format = wb.add_format({'bold': True, 'bg_color': '#d7dbd8'})
 
 class wbMain():
 	g = Github(TOKEN)
@@ -17,11 +15,13 @@ class wbMain():
 	def __init__(self):
 		self.iLabelList = self.milestone = self.since = github.GithubObject.NotSet
 		self.eLabelList = []
-		self.optionList = [('Add a label', self.addILabel), ('Exclude a label', self.addILabel), ('Add a milestone', self.addMilestone), \
-		('Specify date', self.addDate), ('Change Repo', self.getRepo), ('Write to sheet', self.writeToSheet), ('Show Current Settings', self.showSettings)]
-		self.repoList = g.get_user().get_repos()
+		self.numRows = 30
 		self.repo = None
-		self.rowNum = 0
+		self.optionList = [('Add a label', self.addILabel), ('Exclude a label', self.addELabel), ('Add a milestone', self.addMilestone), \
+		('Specify date', self.addDate), ('Change Repo', self.getRepo), ('Write to sheet', self.writeToSheet), \
+		('Show Current Settings', self.showSettings), ('Change Number of Rows', self.changeNumRows)]
+		self.repoList = g.get_user().get_repos()
+		
 
 	def input_checker(func):
 		def input_checker_wrapper(*args, **kwargs):
@@ -79,34 +79,48 @@ class wbMain():
 		self.since = parse(input(), fuzzy_with_tokens = True)[0]
 		print(self.since)
 
+	@input_checker
+	def changeNumRows(self):
+		print('Enter the new number of rows')
+		self.numRows = int(input())
+
 	def getIssues(self):
 		# This needs fixing, how to make it work with the full list?
-		if self.eLabelList:
-			return [i for i in self.repo.get_issues(state='all', labels=self.iLabelList, milestone=self.milestone, since=self.since, direction='asc') if elabel not in self.iLabelList]
-		else:	
-			return self.repo.get_issues(state='all', labels=self.iLabelList, milestone=self.milestone, since=self.since, direction='asc')
+		issueList = list(self.repo.get_issues(state='all', labels=self.iLabelList, milestone=self.milestone, since=self.since, direction='asc'))
+		for label in self.eLabelList:
+			issueList = [i for i in issueList if label not in i.labels]
+		return issueList
 
 	@input_checker
 	def writeToSheet(self):
+		# Helper function to split the list into chunks
+		def chunks(lst, n):
+			for i in range(0, len(lst), n):
+				yield lst[i:i + n]
+		# Get all of the issues with the given states
 		issueList = self.getIssues()
+		# Split the issueList into chunks
+		issueList = list(chunks(issueList, 30))
 		print('Enter the sheet name')
-		ws = wb.add_worksheet(input())
-		for i in range(self.rowNum, issueList.totalCount*3, 3):
-			# Format the top row
-			for j in range(1, 8):
-				ws.write(i, j, '', cell_format)
-			# Write the issue number and issue title, and link the text back to the original issue
-			ws.write_url(i, 1, issueList[int(i/3)].html_url, cell_format, string='#{} {}'.format(issueList[int(i/3)].number, issueList[int(i/3)].title))
-			ws.write(i, 3, 'Tester:', cell_format)
-			ws.write(i, 8, 'Automation Status:', cell_format)
-			# Write the bug number
-			ws.write(i+1, 0, i/3+1)
-			ws.write(i+1, 2, 'TC: Detail')
-			ws.write(i+1, 3, 'Step #:')
-			ws.write(i+1, 4, 'Test Steps:')
-			ws.write(i+1, 5, 'Validation:')
-			ws.write(i+1, 6, 'Stats (Pass/Fail/Blocked)')
-			ws.write(i+1, 7, 'Issue #')
+		wsName = input()
+		for idx, subList in enumerate(issueList):
+			ws = wb.add_worksheet(wsName+'_'+str(idx))
+			for i in range(self.rowNum, len(subList)*3, 3):
+				# Format the top row
+				for j in range(1, 8):
+					ws.write(i, j, '', cell_format)
+				# Write the issue number and issue title, and link the text back to the original issue
+				ws.write_url(i, 1, subList[int(i/3)].html_url, cell_format, string='#{} {}'.format(subList[int(i/3)].number, subList[int(i/3)].title))
+				ws.write(i, 3, 'Tester:', cell_format)
+				ws.write(i, 8, 'Automation Status:', cell_format)
+				# Write the bug number
+				ws.write(i+1, 0, i/3+1)
+				ws.write(i+1, 2, 'TC: Detail')
+				ws.write(i+1, 3, 'Step #:')
+				ws.write(i+1, 4, 'Test Steps:')
+				ws.write(i+1, 5, 'Validation:')
+				ws.write(i+1, 6, 'Stats (Pass/Fail/Blocked)')
+				ws.write(i+1, 7, 'Issue #')
 
 	def showSettings(self):
 		print('Current repository:', self.repo.name)
@@ -117,9 +131,11 @@ class wbMain():
 			print('\n')
 		else:
 			print('None')
-		# print('\nCurrent labels to exclude:'),
-		# for label in self.eLabelList:
-		# 	print(label/name, end=' '),
+		print('Current labels to exclude:'),
+		if self.eLabelList:
+			for label in self.eLabelList:
+				print(label.name, end=' ')
+			print('\n')
 		if self.milestone != github.GithubObject.NotSet:
 			print('Current milestone:', self.milestone.title, end=' ')
 		else:
@@ -128,6 +144,7 @@ class wbMain():
 			print('Current date:', self.since.strftime('%m-%d-%y'))
 		else:
 			print('Current date: None')
+		print('Number of issues per sheet: ', self.numRows)
 
 	@input_checker
 	def getRepo(self):
@@ -153,11 +170,12 @@ class wbMain():
 				break
 			self.optionList[inputIdx][1]()
 
+print('Enter the name of the workbook')
+wb = xlsxwriter.Workbook(input()+'.xlsx')
+cell_format = wb.add_format({'bold': True, 'bg_color': '#d7dbd8'})
 newWb = wbMain()
 newWb.mainMenu()
 wb.close()
 
-
 # TODO:
 # Show the current settings (TOUCHUP)
-# Name the worksheet?
