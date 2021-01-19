@@ -17,9 +17,9 @@ class wbMain():
 		self.eLabelList = []
 		self.numRows = 30
 		self.repo = None
-		self.optionList = [('Add a label', self.addILabel), ('Exclude a label', self.addELabel), ('Add a milestone', self.addMilestone), \
-		('Specify date', self.addDate), ('Change Repo', self.getRepo), ('Write to sheet', self.writeToSheet), \
-		('Show Current Settings', self.showSettings), ('Change Number of Rows', self.changeNumRows)]
+		self.optionList = [('Add a Label', self.addILabel), ('Exclude a Label', self.addELabel), ('Add a Milestone', self.addMilestone), \
+		('Specify Date', self.addDate), ('Change Repo', self.getRepo), ('Change Number of Issues per Sheet', self.changeNumRows), \
+		 ('Show Current Settings', self.showSettings), ('Reset to Default Settings', self.__init__), ('Write to Sheet', self.writeToSheet)]
 		self.repoList = g.get_user().get_repos()
 		
 
@@ -100,12 +100,12 @@ class wbMain():
 		# Get all of the issues with the given states
 		issueList = self.getIssues()
 		# Split the issueList into chunks
-		issueList = list(chunks(issueList, 30))
+		issueList = list(chunks(issueList, self.numRows))
 		print('Enter the sheet name')
 		wsName = input()
 		for idx, subList in enumerate(issueList):
 			ws = wb.add_worksheet(wsName+'_'+str(idx))
-			for i in range(self.rowNum, len(subList)*3, 3):
+			for i in range(0, len(subList)*3, 3):
 				# Format the top row
 				for j in range(1, 8):
 					ws.write(i, j, '', cell_format)
