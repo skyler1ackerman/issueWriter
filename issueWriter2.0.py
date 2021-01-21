@@ -44,9 +44,9 @@ class wbMain():
 		print('Add a label to filter by')
 		for idx, obj in enumerate(allLabels:=self.repo.get_labels()):
 			print(idx, obj.name)
-		print(allLabels.totalCount, 'Cancel')
+		print(idx+1, 'Cancel')
 		objIndex = int(input())
-		if objIndex == allLabels.totalCount:
+		if objIndex == idx+1:
 			return
 		self.iLabelList = self.addToList(self.iLabelList, allLabels[objIndex])
 
@@ -55,29 +55,27 @@ class wbMain():
 		print('Add a label to exclude')
 		for idx, obj in enumerate(allLabels:=self.repo.get_labels()):
 			print(idx, obj.name)
-		print(allLabels.totalCount, 'Cancel')
+		print(idx+1, 'Cancel')
 		objIndex = int(input())
-		if objIndex == allLabels.totalCount:
+		if objIndex == idx+1:
 			return
 		self.eLabelList = self.addToList(self.eLabelList, allLabels[objIndex])
 
 	@input_checker
 	def addMilestone(self):
 		print('Add a milestone to filter by')
-		for idx, obj in enumerate(allLabels:=self.repo.get_milestones(state='all')):
+		for idx, obj in enumerate(allStones:=self.repo.get_milestones(state='all')):
 			print(idx, obj.title)
-		print(allLabels.totalCount, 'Cancel')
+		print(idx+1, 'Cancel')
 		objIndex = int(input())
-		if objIndex == allLabels.totalCount:
+		if objIndex == idx+1:
 			return
-		self.milestone = allLabels[objIndex]
-		print(self.milestone)
+		self.milestone = allStones[objIndex]
 
 	@input_checker
 	def addDate(self):
 		print('Please enter a date in pretty much any format')
 		self.since = parse(input(), fuzzy_with_tokens = True)[0]
-		print(self.since)
 
 	@input_checker
 	def changeNumRows(self):
@@ -128,16 +126,18 @@ class wbMain():
 		if self.iLabelList != github.GithubObject.NotSet:
 			for label in self.iLabelList:
 				print(label.name, end=' ')
-			print('\n')
+			print('')
 		else:
 			print('None')
-		print('Current labels to exclude:'),
+		print('Current labels to exclude:', end=' '),
 		if self.eLabelList:
 			for label in self.eLabelList:
 				print(label.name, end=' ')
-			print('\n')
+			print('')
+		else:
+			print('None')
 		if self.milestone != github.GithubObject.NotSet:
-			print('Current milestone:', self.milestone.title, end=' ')
+			print('Current milestone:', self.milestone.title)
 		else:
 			print('Current milestone: None')
 		if self.since != github.GithubObject.NotSet:
