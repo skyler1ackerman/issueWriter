@@ -70,7 +70,7 @@ parser.add_argument('-el','--eLabel', help="""List of labels to exclude. If more
 parser.add_argument('-m','--milestoneNum', help="""Number of milestone to filter with.\n
 	1.32 Maintenance = 10\n
 	1.33 Maintenance = 11\n
-	1.34 Maintenance = 12""", required=False, type=int, default=0)
+	Release 1.34 = 12""", type=int, default=0)
 
 parser.add_argument('-d','--date', help="""Datetime object to act as deadline. Will get all issues created, edited, 
 	or commented on AFTER the datetime object""", nargs='+', default=[])
