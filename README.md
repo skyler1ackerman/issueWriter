@@ -71,7 +71,8 @@ This must be run on python 3.8 or above, because I used the Walrus operator.
 
 ## Other Issues
 
-There is no way for xlsxwriter to set a cell to autofill with text, so after the sheet is created you will have to change that formatting yourself, globally.
+The automatic import of test steps only works if you have marked them with numbers or bullet points. Links are
+not imported.
 
 ## Feedback
 
