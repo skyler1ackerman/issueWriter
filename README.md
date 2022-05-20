@@ -65,6 +65,35 @@ If you wanted all the High Priority Enhancements from the Release 1.34 milestone
 
 And so on.
 
+## Previous Commands to Generate Full Test Run List
+```py
+# Get all of the iqtools bugs from the 1.34 Milestone
+python issueWriter.py -sn "1.34 Milestone Bugs" -r iqtools -wn "milestone1.34_bugs"  -al bug -el wontfix -m 12 -tc "#f4b084"
+
+# Get all of the iqtools bugs from the 1.33 Maint Milestone
+python issueWriter.py -sn "1.33 Maint Bugs" -r iqtools -wn "maint1.33_bugs"  -al bug -el wontfix -m 11 -tc "#f4b084"
+
+# Get all of the iqtools enhancements that are not marked as bugs from the 1.34 Milestone
+python issueWriter.py -sn "1.34 Milestone Features" -r iqtools -wn "milestone1.34_features"  -al enhancement -el wontfix bug -m 12 -tc "#c6e0b4"
+
+# Get all of the iqtools enhancements that are not marked as bugs from the 1.33 Maint Milestone
+python issueWriter.py -sn "1.33 Maint Features" -r iqtools -wn "maint1.33_features"  -al enhancement -el wontfix bug -m 11 -tc "#c6e0b4"
+
+# Get all of the vantiq-issues bugs from the 1.34 Milestone
+python issueWriter.py -sn "VI 1.34 Milestone Bugs" -r vantiq-issues -wn "vi_milestone1.34_bugs"  -al bug -el wontfix -m 12 -tc "#f4b084"
+
+# Get all of the vantiq-issues bugs from the 1.33 Maint Milestone
+python issueWriter.py -sn "VI 1.33 Maint Bugs" -r vantiq-issues -wn "vi_maint1.33_bugs"  -al bug -el wontfix -m 11 -tc "#f4b084"
+
+# Get all of the vantiq-issues enhancements that are not marked as bugs from the 1.34 Milestone
+python issueWriter.py -sn "VI 1.34 Milestone Features" -r vantiq-issues -wn "vi_milestone1.34_features"  -al enhancement -el wontfix bug -m 12 -tc "#c6e0b4"
+
+# Get all of the vantiq-issues enhancements that are not marked as bugs from the 1.33 Maint Milestone
+python issueWriter.py -sn "VI 1.33 Maint Features" -r vantiq-issues -wn "vi_maint1.33_features"  -al enhancement -el wontfix bug -m 11 -tc "#c6e0b4"
+
+```
+
+
 ## Version
 
 This must be run on python 3.8 or above, because I used the Walrus operator.
