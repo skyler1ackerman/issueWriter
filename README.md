@@ -18,22 +18,30 @@ usage: issueWriter.py [-h] [-al ALABEL [ALABEL ...]] [-el ELABEL [ELABEL ...]]
 IssueWriter: From Issues to Sheets
 
 optional arguments:
+usage: issueWriter.py [-h] [-al [ALABEL [ALABEL ...]]]
+                      [-el [ELABEL [ELABEL ...]]]
+                      [-m [MILESTONENUM [MILESTONENUM ...]]]
+                      [-d [DATE [DATE ...]]] -r REPO [-n SHEETNUM]
+                      [-sn SHEETNAME] [-wn WORKBOOKNAME] [-tc TABCOLOR]
+
+IssueWriter: From Issues to Sheets
+
+optional arguments:
   -h, --help            show this help message and exit
-  -al ALABEL [ALABEL ...], --aLabel ALABEL [ALABEL ...]
+  -al [ALABEL [ALABEL ...]], --aLabel [ALABEL [ALABEL ...]]
                         List of labels to include. If more than one label is
                         specified, the program will find issues with ALL
                         labels.
-  -el ELABEL [ELABEL ...], --eLabel ELABEL [ELABEL ...]
+  -el [ELABEL [ELABEL ...]], --eLabel [ELABEL [ELABEL ...]]
                         List of labels to exclude. If more than one label is
                         specified, the program will find issues with NONE of
                         the labels
-  -m MILESTONENUM, --milestoneNum MILESTONENUM
+  -m [MILESTONENUM [MILESTONENUM ...]], --milestoneNum [MILESTONENUM [MILESTONENUM ...]]
                         Number of milestone to filter with. 1.32 Maintenance =
                         10 1.33 Maintenance = 11 Release 1.34 = 12
-  -d DATE [DATE ...], --date DATE [DATE ...]
+  -d [DATE [DATE ...]], --date [DATE [DATE ...]]
                         Datetime object to act as deadline. Will get all
-                        issues created, edited, or commented on AFTER the
-                        datetime object
+                        issues closed AFTER the date provided
   -r REPO, --repo REPO  Repository from which issues are pulled
   -n SHEETNUM, --sheetNum SHEETNUM
                         The number of issues per sheet
@@ -41,6 +49,9 @@ optional arguments:
                         The name for the sheets in the Workbook
   -wn WORKBOOKNAME, --workbookName WORKBOOKNAME
                         The name for workbook. (Full File)
+  -tc TABCOLOR, --tabColor TABCOLOR
+                        Color for the created tabs. Can be a string or or HEX.
+                        (#FF9900)
 ```
 
 Most of these are pretty self-explanatory. The only tricky one is milestones, which have to be passed in as numbers.

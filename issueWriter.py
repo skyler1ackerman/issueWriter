@@ -21,7 +21,7 @@ class wbMain():
 		self.eLabelList = [e if e else [] for e in eLabel]
 		self.repo = [g.get_repo(f'Vantiq/{r}') for r in repo]
 		self.milestone = [self.repo[idx].get_milestone(int(mn[0])) if mn else github.GithubObject.NotSet for idx, mn in enumerate(milestoneNum)] 
-		self.since = [parse(' '.join(d)) if d else github.GithubObject.NotSet for d in date] 
+		self.since = [parse(' '.join(d)) if d else None for d in date] 
 		self.numRows = 30
 		self.sheetName = f'{" ".join(self.iLabelList)} Issues' if not sheetName else sheetName
 		self.tabColor = tabColor
@@ -35,9 +35,10 @@ class wbMain():
 		issueList = []
 		# First get all of the issues that fit the criteria
 		for i in range(self.args_length):
-			issueList.append(self.repo[i].get_issues(state='all', labels=self.iLabelList[i], milestone=self.milestone[i], since=self.since[i], direction='asc'))
+			issueList.append(self.repo[i].get_issues(state='all', labels=self.iLabelList[i], milestone=self.milestone[i], direction='asc'))
 			for label in self.eLabelList[i]:
 				issueList[i] = [issue for issue in issueList[i] if label not in [l.name for l in issue.labels]]
+			issueList[i	] = [issue for issue in issueList[i] if issue.closed_at and self.since[i] and self.since[i] < issue.closed_at]
 		return issueList
 
 	def writeToSheet(self):
@@ -129,8 +130,8 @@ parser.add_argument('-m','--milestoneNum', help="""Number of milestone to filter
 	1.33 Maintenance = 11\n
 	Release 1.34 = 12""", nargs='*', action='append')
 
-parser.add_argument('-d','--date', help="""Datetime object to act as deadline. Will get all issues created, edited, 
-	or commented on AFTER the datetime object""", nargs='*', action='append')
+parser.add_argument('-d','--date', help="""Datetime object to act as deadline. Will get all issues 
+	closed AFTER the date provided""", nargs='*', action='append')
 
 parser.add_argument('-r','--repo', help='Repository from which issues are pulled', required=True, action='append')
 
