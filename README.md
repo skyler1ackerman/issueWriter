@@ -11,18 +11,13 @@ recommended that you specify some labels, or else you may end up with far more i
 To see the full list, run `issueWriter.py --help` or `issueWriter.py -h` for short.
 
 ```python
-usage: issueWriter.py [-h] [-al ALABEL [ALABEL ...]] [-el ELABEL [ELABEL ...]]
-                      [-m MILESTONENUM] [-d DATE [DATE ...]] -r REPO
-                      [-n SHEETNUM] [-sn SHEETNAME] [-wn WORKBOOKNAME]
-
-IssueWriter: From Issues to Sheets
-
-optional arguments:
 usage: issueWriter.py [-h] [-al [ALABEL [ALABEL ...]]]
                       [-el [ELABEL [ELABEL ...]]]
                       [-m [MILESTONENUM [MILESTONENUM ...]]]
-                      [-d [DATE [DATE ...]]] -r REPO [-n SHEETNUM]
-                      [-sn SHEETNAME] [-wn WORKBOOKNAME] [-tc TABCOLOR]
+                      [-d [DATE [DATE ...]]] -r REPO
+                      [-si [SPECIFICISSUES [SPECIFICISSUES ...]]]
+                      [-n SHEETNUM] [-sn SHEETNAME] [-wn WORKBOOKNAME]
+                      [-tc TABCOLOR]
 
 IssueWriter: From Issues to Sheets
 
@@ -43,6 +38,10 @@ optional arguments:
                         Datetime object to act as deadline. Will get all
                         issues closed AFTER the date provided
   -r REPO, --repo REPO  Repository from which issues are pulled
+  -si [SPECIFICISSUES [SPECIFICISSUES ...]], --specificIssues [SPECIFICISSUES [SPECIFICISSUES ...]]
+                        List of specific issues for a given Repository. If
+                        provided, will return sheet with given issues,
+                        regardless of other parameters entered.
   -n SHEETNUM, --sheetNum SHEETNUM
                         The number of issues per sheet
   -sn SHEETNAME, --sheetName SHEETNAME

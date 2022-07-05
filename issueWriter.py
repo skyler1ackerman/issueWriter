@@ -16,15 +16,17 @@ g = Github(TOKEN)
 class wbMain():
 	g = Github(TOKEN)
 	#Init class, set everything to NotSet
-	def __init__(self, aLabel, eLabel, milestoneNum, date, repo, sheetNum, sheetName, workbookName, tabColor):
+	def __init__(self, aLabel, eLabel, milestoneNum, date, repo, sheetNum, sheetName, workbookName, tabColor, specificIssues):
 		self.iLabelList = [a if a else github.GithubObject.NotSet for a in aLabel]
 		self.eLabelList = [e if e else [] for e in eLabel]
 		self.repo = [g.get_repo(f'Vantiq/{r}') for r in repo]
 		self.milestone = [self.repo[idx].get_milestone(int(mn[0])) if mn else github.GithubObject.NotSet for idx, mn in enumerate(milestoneNum)] 
-		self.since = [parse(' '.join(d)) if d else None for d in date] 
+		self.since = [parse(' '.join(d)) if d else None for d in date]
 		self.numRows = 30
 		self.sheetName = f'{" ".join(self.iLabelList)} Issues' if not sheetName else sheetName
 		self.tabColor = tabColor
+		self.specificIssues = specificIssues
+		self.issueFunc = self.getSpecIssues if specificIssues else self.getIssues
 		it = iter([l for l in [self.iLabelList, self.eLabelList, self.repo, self.milestone, self.since, self.sheetName] if l and l != github.GithubObject.NotSet])
 		the_len = len(next(it))
 		if not all(len(l) == the_len for l in it):
@@ -38,7 +40,15 @@ class wbMain():
 			issueList.append(self.repo[i].get_issues(state='all', labels=self.iLabelList[i], milestone=self.milestone[i], direction='asc'))
 			for label in self.eLabelList[i]:
 				issueList[i] = [issue for issue in issueList[i] if label not in [l.name for l in issue.labels]]
-			issueList[i	] = [issue for issue in issueList[i] if issue.closed_at and self.since[i] and self.since[i] < issue.closed_at]
+			issueList[i] = [issue for issue in issueList[i] if issue.closed_at and self.since[i] and self.since[i] < issue.closed_at]
+		return issueList
+
+	def getSpecIssues(self):
+		issueList = []
+		for i in range(self.args_length):
+			issueList.append([])
+			for issueNum in self.specificIssues:
+				issueList[i].append(self.repo[i].get_issue(int(issueNum)))
 		return issueList
 
 	def writeToSheet(self):
@@ -51,7 +61,7 @@ class wbMain():
 			for i in range(0, len(lst), n):
 				yield lst[i:i + n]
 		# Get all of the issues with the given states
-		issueList = self.getIssues()
+		issueList = self.issueFunc()
 		for sheetNum in range(self.args_length):
 			# Split the issueList into chunks
 			curIssueList = list(chunks(issueList[sheetNum], self.numRows))
@@ -120,20 +130,23 @@ class wbMain():
 parser = argparse.ArgumentParser(description='IssueWriter: From Issues to Sheets')
 
 parser.add_argument('-al','--aLabel', help="""List of labels to include. If more than one label is specified, the program will
-	find issues with ALL labels.""", nargs='*', action='append')
+	find issues with ALL labels.""", nargs='*', action='append', default=[])
 
 parser.add_argument('-el','--eLabel', help="""List of labels to exclude. If more than one label is specified, the program will
-	find issues with NONE of the labels""", nargs='*', action='append')
+	find issues with NONE of the labels""", nargs='*', action='append', default=[])
 
 parser.add_argument('-m','--milestoneNum', help="""Number of milestone to filter with.\n
 	1.32 Maintenance = 10\n
 	1.33 Maintenance = 11\n
-	Release 1.34 = 12""", nargs='*', action='append')
+	Release 1.34 = 12""", nargs='*', action='append', default=[])
 
 parser.add_argument('-d','--date', help="""Datetime object to act as deadline. Will get all issues 
 	closed AFTER the date provided""", nargs='*', action='append')
 
 parser.add_argument('-r','--repo', help='Repository from which issues are pulled', required=True, action='append')
+
+parser.add_argument('-si', '--specificIssues', help="""List of specific issues for a given Repository. If provided, will return sheet 
+	with given issues, regardless of other parameters entered.""", nargs='*', default=[])
 
 parser.add_argument('-n', '--sheetNum', help='The number of issues per sheet', type=int, default=30)
 
