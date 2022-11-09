@@ -5,6 +5,7 @@ import xlsxwriter
 from config import TOKEN
 from github import Github
 from datetime import datetime, timedelta, timezone
+from datetime import date as dt
 from dateutil.parser import parse
 from openpyxl import load_workbook
 
@@ -21,7 +22,7 @@ class wbMain():
 		self.eLabelList = [e if e else [] for e in eLabel]
 		self.repo = [g.get_repo(f'Vantiq/{r}') for r in repo]
 		self.milestone = [self.repo[idx].get_milestone(int(mn[0])) if mn else github.GithubObject.NotSet for idx, mn in enumerate(milestoneNum)] 
-		self.since = [parse(' '.join(d)) if d else None for d in date]
+		self.since = [parse(' '.join(d)) if d else datetime(dt.min.year, dt.min.month, dt.min.day) for d in date]
 		self.numRows = 30
 		self.sheetName = f'{" ".join(self.iLabelList)} Issues' if not sheetName else sheetName
 		self.tabColor = tabColor
@@ -62,9 +63,11 @@ class wbMain():
 				yield lst[i:i + n]
 		# Get all of the issues with the given states
 		issueList = self.issueFunc()
+		print(len(issueList), 'Issue list')
 		for sheetNum in range(self.args_length):
 			# Split the issueList into chunks
 			curIssueList = list(chunks(issueList[sheetNum], self.numRows))
+			print(len(curIssueList))
 			for idx, subList in enumerate(curIssueList):
 				ws = wb.add_worksheet(self.sheetName[sheetNum]+' #'+str(idx+1))
 				if self.tabColor:
@@ -138,7 +141,9 @@ parser.add_argument('-el','--eLabel', help="""List of labels to exclude. If more
 parser.add_argument('-m','--milestoneNum', help="""Number of milestone to filter with.\n
 	1.32 Maintenance = 10\n
 	1.33 Maintenance = 11\n
-	Release 1.34 = 12""", nargs='*', action='append', default=[])
+	Release 1.34 = 12\n
+	Release 1.35 = 13
+	1.34 Maintenance = 14""", nargs='*', action='append', default=[])
 
 parser.add_argument('-d','--date', help="""Datetime object to act as deadline. Will get all issues 
 	closed AFTER the date provided""", nargs='*', action='append')
