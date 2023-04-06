@@ -126,49 +126,91 @@ class wbMain():
 
 
 					curRow+=1
+				curRow+=1
+				ws.write(curRow, 1, 'Total Tested Issues')
+				ws.write(curRow, 2, 'Total Issues')
+				curRow+=1
+				ws.write_formula(curRow, 1, '=SUMPRODUCT((D2:D1000<>"")*(D1:D999="Tester:"))')
+				ws.write_formula(curRow, 2, '=SUMPRODUCT((1)*(D1:D999="Tester:"))')
 		wb.close()
 
 
 
 parser = argparse.ArgumentParser(description='IssueWriter: From Issues to Sheets')
 
-parser.add_argument('-al','--aLabel', help="""List of labels to include. If more than one label is specified, the program will
-	find issues with ALL labels.""", nargs='*', action='append', default=[])
+parser.add_argument(
+	'-al','--aLabel', 
+	help="""List of labels to include. If more than one label is specified, the program willfind issues with ALL labels.""", 
+	nargs='*', 
+	action='append', 
+	default=[])
 
-parser.add_argument('-el','--eLabel', help="""List of labels to exclude. If more than one label is specified, the program will
-	find issues with NONE of the labels""", nargs='*', action='append', default=[])
+parser.add_argument(
+	'-el','--eLabel', 
+	help="""List of labels to exclude. If more than one label is specified, the program willfind issues with NONE of the labels""", 
+	nargs='*', 
+	action='append', 
+	default=[])
 
-parser.add_argument('-m','--milestoneNum', help="""Number of milestone to filter with.\n
+parser.add_argument(
+	'-m','--milestoneNum', 
+	help="""Number of milestone to filter with.\n
 	1.32 Maintenance = 10\n
 	1.33 Maintenance = 11\n
 	Release 1.34 = 12\n
 	Release 1.35 = 13
-	1.34 Maintenance = 14""", nargs='*', action='append', default=[])
+	1.34 Maintenance = 14""", 
+	nargs='*', 
+	action='append', 
+	default=[])
 
-parser.add_argument('-d','--date', help="""Datetime object to act as deadline. Will get all issues 
-	closed AFTER the date provided""", nargs='*', action='append')
+parser.add_argument(
+	'-d','--date', 
+	help="""Datetime object to act as deadline. Will get all issues closed AFTER the date provided""", 
+	nargs='*', 
+	action='append')
 
-parser.add_argument('-r','--repo', help='Repository from which issues are pulled', required=True, action='append')
+parser.add_argument(
+	'-r','--repo', 
+	help='Repository from which issues are pulled', 
+	required=True, 
+	action='append')
 
-parser.add_argument('-si', '--specificIssues', help="""List of specific issues for a given Repository. If provided, will return sheet 
-	with given issues, regardless of other parameters entered.""", nargs='*', default=[])
+parser.add_argument('-si', '--specificIssues', 
+	help="""List of specific issues for a given Repository. If provided, will return sheet with given issues, regardless of other parameters entered.""",
+	nargs='*', 
+	default=[])
 
-parser.add_argument('-n', '--sheetNum', help='The number of issues per sheet', type=int, default=30)
+parser.add_argument(
+	'-n', '--sheetNum', 
+	help='The number of issues per sheet', 
+	type=int, 
+	default=30)
 
-parser.add_argument('-sn', '--sheetName', help='The name for the sheets in the Workbook', action='append')
+parser.add_argument(
+	'-sn', '--sheetName', 
+	help='The name for the sheets in the Workbook', 
+	action='append')
 
-parser.add_argument('-wn', '--workbookName', help='The name for workbook. (Full File)')
+parser.add_argument(
+	'-wn', '--workbookName', 
+	help='The name for workbook. (Full File)')
 
-parser.add_argument('-tc', '--tabColor', help='Color for the created tabs. Can be a string or or HEX. (#FF9900)', action='append')
+parser.add_argument(
+	'-tc', '--tabColor', 
+	help='Color for the created tabs. Can be a string or or HEX. (#FF9900)', 
+	action='append')
 
 # parser.add_argument('-ew', '--existingWorkbook', help='Existing Worksheet to copy data from. Any new sheets created will be placed at the end of the worksheet', default=None)
 
 args = vars(parser.parse_args())
-wbName = args['workbookName']
+print(args)
+print(type(args))
+# wbName = args['workbookName']
 
 
-newWb = wbMain(**args)
-newWb.writeToSheet()
+# newWb = wbMain(**args)
+# newWb.writeToSheet()
 
 # TODO:
 # Add color
