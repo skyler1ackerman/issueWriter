@@ -33,6 +33,7 @@ class wbMain():
 		if not all(len(l) == the_len for l in it):
 			raise ValueError('You have not passed in the same number of args for all of the options!')
 		self.args_length = the_len
+		self.issueList = []
 
 	def getIssues(self):
 		issueList = []
@@ -62,12 +63,10 @@ class wbMain():
 			for i in range(0, len(lst), n):
 				yield lst[i:i + n]
 		# Get all of the issues with the given states
-		issueList = self.issueFunc()
-		print(len(issueList), 'Issue list')
+		self.issueList = self.issueFunc()
 		for sheetNum in range(self.args_length):
 			# Split the issueList into chunks
-			curIssueList = list(chunks(issueList[sheetNum], self.numRows))
-			print(len(curIssueList))
+			curIssueList = list(chunks(self.issueList[sheetNum], self.numRows))
 			for idx, subList in enumerate(curIssueList):
 				ws = wb.add_worksheet(self.sheetName[sheetNum]+' #'+str(idx+1))
 				if self.tabColor:
@@ -133,6 +132,50 @@ class wbMain():
 				ws.write_formula(curRow, 1, '=SUMPRODUCT((D2:D1000<>"")*(D1:D999="Tester:"))')
 				ws.write_formula(curRow, 2, '=SUMPRODUCT((1)*(D1:D999="Tester:"))')
 		wb.close()
+
+
+	def postProcess(self):
+		MIN_DATE = 'January 24th, 2023'
+		allRepos = set(self.repo)
+		allIssues = []
+		for r in allRepos:
+			allIssues+=(r.get_issues(state='all'))
+
+		print(f'Issue List len: {len(self.issueList)}')
+		allIssues = [issue for issue in allIssues if issue.created_at and not issue.pull_request and parse(MIN_DATE) < issue.created_at and issue not in self.issueList]
+		allAutomated = []
+		allWontFix = []
+		allVerifed = []
+		allOther = []
+		for issue in allIssues:
+			labels = [l.name.lower() for l in issue.labels]
+			if 'automated' in labels:
+				allAutomated.append(issue)
+			elif 'wontfix' in labels:
+				allWontFix.append(issue)
+			elif 'verified' in labels:
+				allVerifed.append(issue)
+			else:
+				allOther.append(issue)
+
+		with open('t.md', 'w') as f:
+			f.write(f'Automated: {len(allAutomated)}\n\n\n')
+			for issue in allAutomated:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+
+			f.write(f'WontFix: {len(allWontFix)}\n\n\n')
+			for issue in allWontFix:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+
+			f.write(f'Verified: {len(allVerifed)}\n\n\n')
+			for issue in allVerifed:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+
+			f.write(f'Other: {len(allOther)}\n\n\n')
+			for issue in allOther:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+
+
 
 
 
@@ -204,13 +247,14 @@ parser.add_argument(
 # parser.add_argument('-ew', '--existingWorkbook', help='Existing Worksheet to copy data from. Any new sheets created will be placed at the end of the worksheet', default=None)
 
 args = vars(parser.parse_args())
-print(args)
-print(type(args))
-# wbName = args['workbookName']
+wbName = args['workbookName']
 
 
-# newWb = wbMain(**args)
-# newWb.writeToSheet()
+newWb = wbMain(**args)
+print("Making sheet")
+newWb.writeToSheet()
+print("Starting postProcess")
+newWb.postProcess()
 
 # TODO:
 # Add color
