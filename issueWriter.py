@@ -18,7 +18,7 @@ class wbMain():
 	g = Github(TOKEN)
 	#Init class, set everything to NotSet
 	def __init__(self, aLabel, eLabel, milestoneNum, date, repo, sheetNum, sheetName, workbookName, tabColor, specificIssues):
-		self.iLabelList = [a if a else github.GithubObject.NotSet for a in aLabel]
+		self.iLabelList = [a if a else [] for a in aLabel]
 		self.eLabelList = [e if e else [] for e in eLabel]
 		self.repo = [g.get_repo(f'Vantiq/{r}') for r in repo]
 		self.milestone = [self.repo[idx].get_milestone(int(mn[0])) if mn else github.GithubObject.NotSet for idx, mn in enumerate(milestoneNum)] 
@@ -39,10 +39,22 @@ class wbMain():
 		issueList = []
 		# First get all of the issues that fit the criteria
 		for i in range(self.args_length):
-			issueList.append(self.repo[i].get_issues(state='all', labels=self.iLabelList[i], milestone=self.milestone[i], direction='asc'))
+			# print(i)
+			issueList.append(self.repo[i].get_issues(state='all', milestone=self.milestone[i], direction='asc'))
+			# print([i.number for i in issueList[i]])
+			# print(f'Initial len: {len(list(issueList[i]))}')
+			# Make sure issue is only included if it has all of the "include" labels
+			for label in self.iLabelList[i]:
+				issueList[i] = [issue for issue in issueList[i] if label in [l.name for l in issue.labels]]
+			# print(f'After include len: {len(list(issueList[i]))}')
+			# Make sure the issue is NOT included if it has any of the "exclude" labels
 			for label in self.eLabelList[i]:
 				issueList[i] = [issue for issue in issueList[i] if label not in [l.name for l in issue.labels]]
+			# print(f'After Exclude len: {len(list(issueList[i]))}')
 			issueList[i] = [issue for issue in issueList[i] if issue.closed_at and self.since[i] and self.since[i] < issue.closed_at]
+			# print(f'After since: {len(issueList[i])}')
+			# print('\n\n')
+
 		return issueList
 
 	def getSpecIssues(self):
@@ -137,17 +149,22 @@ class wbMain():
 	def postProcess(self):
 		MIN_DATE = 'January 24th, 2023'
 		allRepos = set(self.repo)
-		allIssues = []
+		allIssues = set()
+		for l in self.issueList:
+			allIssues.update(set(l))
+		skippedIssues = []
 		for r in allRepos:
-			allIssues+=(r.get_issues(state='all'))
+			skippedIssues+=(r.get_issues(state='all', since=parse(MIN_DATE)))
 
-		print(f'Issue List len: {len(self.issueList)}')
-		allIssues = [issue for issue in allIssues if issue.created_at and not issue.pull_request and parse(MIN_DATE) < issue.created_at and issue not in self.issueList]
+		print(f'Issue List len: {len(allIssues)}')
+		skippedIssues = [issue for issue in skippedIssues if not issue.pull_request and issue not in allIssues]
 		allAutomated = []
 		allWontFix = []
 		allVerifed = []
+		allOpen = []
+		allOtherRelease = []
 		allOther = []
-		for issue in allIssues:
+		for issue in skippedIssues:
 			labels = [l.name.lower() for l in issue.labels]
 			if 'automated' in labels:
 				allAutomated.append(issue)
@@ -155,6 +172,10 @@ class wbMain():
 				allWontFix.append(issue)
 			elif 'verified' in labels:
 				allVerifed.append(issue)
+			elif issue.milestone:
+				allOtherRelease.append(issue)
+			elif not issue.closed_at:
+				allOpen.append(issue)
 			else:
 				allOther.append(issue)
 
@@ -169,6 +190,14 @@ class wbMain():
 
 			f.write(f'Verified: {len(allVerifed)}\n\n\n')
 			for issue in allVerifed:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+
+			f.write(f'Marked for a different release: {len(allOtherRelease)}\n\n\n')
+			for issue in allOtherRelease:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+				
+			f.write(f'Still open: {len(allOpen)}\n\n\n')
+			for issue in allOpen:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
 			f.write(f'Other: {len(allOther)}\n\n\n')
