@@ -7,7 +7,6 @@ from github import Github
 from datetime import datetime, timedelta, timezone
 from datetime import date as dt
 from dateutil.parser import parse
-from openpyxl import load_workbook
 
 
 # If you use TFA you need to auth using an access token instead of username/password
@@ -30,8 +29,8 @@ class wbMain():
 		self.issueFunc = self.getSpecIssues if specificIssues else self.getIssues
 		it = iter([l for l in [self.iLabelList, self.eLabelList, self.repo, self.milestone, self.since, self.sheetName] if l and l != github.GithubObject.NotSet])
 		the_len = len(next(it))
-		if not all(len(l) == the_len for l in it):
-			raise ValueError('You have not passed in the same number of args for all of the options!')
+		# if not all(len(l) == the_len for l in it):
+		# 	raise ValueError('You have not passed in the same number of args for all of the options!')
 		self.args_length = the_len
 		self.issueList = []
 
@@ -119,11 +118,12 @@ class wbMain():
 						curRow+=3
 					stepNum=1
 					for repro_step in issueText:
-						# If it starts with a digit
-						if re.match(r'^\d+\.', repro_step) or re.match(r'^\*', repro_step):
+						# If it starts with a digit, a bullet point, or a digit wrapped in parenthesis, it's a step
+						if re.match(r'^\d+\.', repro_step) or re.match(r'^\*', repro_step) or re.match(r'^\(\d+\)', repro_step):
 							# Remove any leading digits or bullet points
 							repro_step = re.sub(r'^\d+\s*\.', r'', repro_step)
 							repro_step = re.sub(r'^\*\s*', '', repro_step)
+							repro_step = re.sub(r'^\(\d+\)\s*', '', repro_step)
 							# Remove any links
 							repro_step = re.sub(r'\[(.*)\]\((.*)\)', '\1', repro_step)
 							ws.write(curRow, 5, repro_step)
@@ -134,8 +134,6 @@ class wbMain():
 							# Remove the arrow
 							repro_step = re.sub(r'-+>\s*', '', repro_step)
 							ws.write(curRow-1, 6, repro_step)
-
-
 					curRow+=1
 				curRow+=1
 				ws.write(curRow, 1, 'Total Tested Issues')
@@ -179,7 +177,7 @@ class wbMain():
 			else:
 				allOther.append(issue)
 
-		with open('t.md', 'w') as f:
+		with open('x.md', 'w') as f:
 			f.write(f'Automated: {len(allAutomated)}\n\n\n')
 			for issue in allAutomated:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
@@ -195,7 +193,7 @@ class wbMain():
 			f.write(f'Marked for a different release: {len(allOtherRelease)}\n\n\n')
 			for issue in allOtherRelease:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
-				
+
 			f.write(f'Still open: {len(allOpen)}\n\n\n')
 			for issue in allOpen:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
@@ -221,7 +219,7 @@ parser.add_argument(
 	'-el','--eLabel', 
 	help="""List of labels to exclude. If more than one label is specified, the program willfind issues with NONE of the labels""", 
 	nargs='*', 
-	action='append', 
+	action='append', 	
 	default=[])
 
 parser.add_argument(
