@@ -97,4 +97,4 @@ not imported.
 ## Feedback
 
 If any Vantiq employee has any questions or comments, feel free to either drop me an email at sackerman@vantiq.com
-or open an issue on this repository. I will respond in a timely manner.
+or open an issue on this repository. I will respond in a timely manner, if possible.
