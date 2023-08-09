@@ -160,7 +160,7 @@ class wbMain():
 		all_wont_fix = []
 		all_verifed = []
 		all_open = []
-		all_other_release = []
+		all_other_release = []	
 		all_other = []
 		for issue in skipped_issues:
 			labels = [l.name.lower() for l in issue.labels]
