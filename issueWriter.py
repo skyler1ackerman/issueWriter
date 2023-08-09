@@ -150,56 +150,56 @@ class wbMain():
 		allIssues = set()
 		for l in self.issueList:
 			allIssues.update(set(l))
-		skippedIssues = []
+		skipped_issues = []
 		for r in allRepos:
-			skippedIssues+=(r.get_issues(state='all', since=parse(MIN_DATE)))
+			skipped_issues+=(r.get_issues(state='all', since=parse(MIN_DATE)))
 
 		print(f'Issue List len: {len(allIssues)}')
-		skippedIssues = [issue for issue in skippedIssues if not issue.pull_request and issue not in allIssues]
-		allAutomated = []
-		allWontFix = []
-		allVerifed = []
-		allOpen = []
-		allOtherRelease = []
-		allOther = []
-		for issue in skippedIssues:
+		skipped_issues = [issue for issue in skipped_issues if not issue.pull_request and issue not in allIssues]
+		all_automated = []
+		all_wont_fix = []
+		all_verifed = []
+		all_open = []
+		all_other_release = []
+		all_other = []
+		for issue in skipped_issues:
 			labels = [l.name.lower() for l in issue.labels]
 			if 'automated' in labels:
-				allAutomated.append(issue)
+				all_automated.append(issue)
 			elif 'wontfix' in labels:
-				allWontFix.append(issue)
+				all_wont_fix.append(issue)
 			elif 'verified' in labels:
-				allVerifed.append(issue)
+				all_verifed.append(issue)
 			elif issue.milestone:
-				allOtherRelease.append(issue)
+				all_other_release.append(issue)
 			elif not issue.closed_at:
-				allOpen.append(issue)
+				all_open.append(issue)
 			else:
-				allOther.append(issue)
+				all_other.append(issue)
 
 		with open('x.md', 'w') as f:
-			f.write(f'Automated: {len(allAutomated)}\n\n\n')
-			for issue in allAutomated:
+			f.write(f'Automated: {len(all_automated)}\n\n\n')
+			for issue in all_automated:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
-			f.write(f'WontFix: {len(allWontFix)}\n\n\n')
-			for issue in allWontFix:
+			f.write(f'WontFix: {len(all_wont_fix)}\n\n\n')
+			for issue in all_wont_fix:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
-			f.write(f'Verified: {len(allVerifed)}\n\n\n')
-			for issue in allVerifed:
+			f.write(f'Verified: {len(all_verifed)}\n\n\n')
+			for issue in all_verifed:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
-			f.write(f'Marked for a different release: {len(allOtherRelease)}\n\n\n')
-			for issue in allOtherRelease:
+			f.write(f'Marked for a different release: {len(all_other_release)}\n\n\n')
+			for issue in all_other_release:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
-			f.write(f'Still open: {len(allOpen)}\n\n\n')
-			for issue in allOpen:
+			f.write(f'Still open: {len(all_open)}\n\n\n')
+			for issue in all_open:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
-			f.write(f'Other: {len(allOther)}\n\n\n')
-			for issue in allOther:
+			f.write(f'Other: {len(all_other)}\n\n\n')
+			for issue in all_other:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
 
