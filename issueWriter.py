@@ -168,9 +168,9 @@ class wbMain():
 				all_automated.append(issue)
 			elif 'wontfix' in labels:
 				all_wont_fix.append(issue)
-			elif 'verified' in labels:
-				all_verifed.append(issue)
-			elif issue.milestone:
+			# elif 'verified' in labels:
+			# 	all_verifed.append(issue)
+			elif issue.milestone and issue.milestone not in self.milestone:
 				all_other_release.append(issue)
 			elif not issue.closed_at:
 				all_open.append(issue)
