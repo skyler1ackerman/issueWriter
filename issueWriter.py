@@ -50,7 +50,7 @@ class wbMain():
 			for label in self.eLabelList[i]:
 				issueList[i] = [issue for issue in issueList[i] if label not in [l.name for l in issue.labels]]
 			# print(f'After Exclude len: {len(list(issueList[i]))}')
-			issueList[i] = [issue for issue in issueList[i] if issue.closed_at and self.since[i] and self.since[i] < issue.closed_at]
+			issueList[i] = [issue for issue in issueList[i] if issue.closed_at and self.since[i] and self.since[i] < issue.closed_at.replace(tzinfo=None)]
 			# print(f'After since: {len(issueList[i])}')
 			# print('\n\n')
 
@@ -108,7 +108,8 @@ class wbMain():
 					if issue.body:
 						# Pull all steps marked by numbering or bullet points, as well as validations (--->)
 						issueText = [b.replace('\r', '') for b in issue.body.split('\n') if b \
-						and(re.match(r'^\d+\.', b) or re.match(r'^\s*-+>', b) or re.match(r'^-+>', b) or re.match(r'^\*', b))]
+						and(re.match(r'^\d+\.', b) or re.match(r'^\s*-+>', b)
+							or re.match(r'^-+>', b) or re.match(r'^\*', b)) or re.match(r'^\(\d+\)\s*', b)]
 						curRow+=1
 					# If any steps were found, 
 					if issueText:
@@ -145,7 +146,7 @@ class wbMain():
 
 
 	def postProcess(self):
-		MIN_DATE = 'January 24th, 2023'
+		MIN_DATE = 'January 24th, 2024'
 		allRepos = set(self.repo)
 		allIssues = set()
 		for l in self.issueList:
@@ -158,9 +159,10 @@ class wbMain():
 		skipped_issues = [issue for issue in skipped_issues if not issue.pull_request and issue not in allIssues]
 		all_automated = []
 		all_wont_fix = []
+		all_duplicate = []
 		all_verifed = []
 		all_open = []
-		all_other_release = []	
+		all_other_release = []
 		all_other = []
 		for issue in skipped_issues:
 			labels = [l.name.lower() for l in issue.labels]
@@ -168,6 +170,8 @@ class wbMain():
 				all_automated.append(issue)
 			elif 'wontfix' in labels:
 				all_wont_fix.append(issue)
+			elif 'duplicate' in labels:
+				all_duplicate.append(issue)
 			# elif 'verified' in labels:
 			# 	all_verifed.append(issue)
 			elif issue.milestone and issue.milestone not in self.milestone:
@@ -184,6 +188,10 @@ class wbMain():
 
 			f.write(f'WontFix: {len(all_wont_fix)}\n\n\n')
 			for issue in all_wont_fix:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+
+			f.write(f'Duplicate: {len(all_duplicate)}\n\n\n')
+			for issue in all_duplicate:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
 			f.write(f'Verified: {len(all_verifed)}\n\n\n')
@@ -280,8 +288,8 @@ wbName = args['workbookName']
 newWb = wbMain(**args)
 print("Making sheet")
 newWb.writeToSheet()
-print("Starting postProcess")
-newWb.postProcess()
+# print("Starting postProcess")
+# newWb.postProcess()
 
 # TODO:
 # Add color
