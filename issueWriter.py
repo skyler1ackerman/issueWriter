@@ -1,7 +1,6 @@
 import argparse, re
 import github.GithubObject
 import xlsxwriter
-import pytz
 
 from config import TOKEN
 from github import Github

@@ -9,8 +9,6 @@ r = g.get_repo('Vantiq/vantiq-issues')
 for n in r.get_milestones():
 	print(n)
 
-print()
-
 r = g.get_repo('Vantiq/iqtools')
 for n in r.get_milestones():
 	print(n)
