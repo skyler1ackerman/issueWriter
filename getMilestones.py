@@ -6,9 +6,11 @@ from github import Github
 g = Github(TOKEN)
 
 r = g.get_repo('Vantiq/vantiq-issues')
+print('Vantiq-issues')
 for n in r.get_milestones():
 	print(n)
 
 r = g.get_repo('Vantiq/iqtools')
+print('Iqtools')
 for n in r.get_milestones():
 	print(n)

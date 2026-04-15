@@ -146,7 +146,7 @@ class wbMain():
 
 
 	def postProcess(self):
-		MIN_DATE = 'January 24th, 2024'
+		MIN_DATE = 'May 2nd, 2025'
 		allRepos = set(self.repo)
 		allIssues = set()
 		for l in self.issueList:
@@ -160,6 +160,7 @@ class wbMain():
 		all_automated = []
 		all_wont_fix = []
 		all_duplicate = []
+		all_server = []
 		all_verifed = []
 		all_open = []
 		all_other_release = []
@@ -172,6 +173,8 @@ class wbMain():
 				all_wont_fix.append(issue)
 			elif 'duplicate' in labels:
 				all_duplicate.append(issue)
+			elif 'server' in labels:
+				all_server.append(issue)
 			# elif 'verified' in labels:
 			# 	all_verifed.append(issue)
 			elif issue.milestone and issue.milestone not in self.milestone:
@@ -192,6 +195,10 @@ class wbMain():
 
 			f.write(f'Duplicate: {len(all_duplicate)}\n\n\n')
 			for issue in all_duplicate:
+				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
+
+			f.write(f'Server: {len(all_server)}\n\n\n')
+			for issue in all_server:
 				f.write(f'[#{issue.number} {issue.title}]({issue.html_url})\n\n')
 
 			f.write(f'Verified: {len(all_verifed)}\n\n\n')
@@ -289,7 +296,7 @@ newWb = wbMain(**args)
 print("Making sheet")
 newWb.writeToSheet()
 # print("Starting postProcess")
-# newWb.postProcess()
+newWb.postProcess()
 
 # TODO:
 # Add color
