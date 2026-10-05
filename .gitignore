@@ -1,0 +1,12 @@
+# Generated Excel workbooks
+*.xlsx
+
+# Markdown output files
+*.md
+
+# Config with secrets/tokens
+config.py
+
+# LLM result cache (issueWriter --ai-steps / --ai-triage)
+ai_cache.json
+ai_cache.json.tmp

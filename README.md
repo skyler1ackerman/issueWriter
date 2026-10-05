@@ -85,6 +85,42 @@ To create a full 1.34 UI Test sheet in one command, run the allsheets.sh file in
 It runs a single unholy command to create everything we need.
 
 
+## Optional AI features (`--ai-steps`, `--ai-triage`)
+
+Two optional steps use Claude through the **Claude Code CLI** in non-interactive mode
+(`claude -p`). They authenticate with your Claude.ai subscription, so runs count against
+your subscription's rate limit rather than pay-per-token API billing.
+
+Setup (one time):
+
+1. Install the CLI. The Claude Code desktop app does **not** put `claude` on PATH.
+   In PowerShell: `irm https://claude.ai/install.ps1 | iex`
+2. Run `claude auth login` once.
+3. `gh` must be installed and logged in (`gh auth status`) for `--ai-triage`.
+
+Flags (also available as `aiSteps`, `aiTriage`, `aiModel` in a JSON config):
+
+| Flag | What it does |
+| --- | --- |
+| `--ai-steps` | Numbered steps / bullets the regex parser finds are first **verified** by Claude to be real test steps (feature checklists, file lists and the like are rejected and treated as if nothing was found). When nothing usable is found, Claude **extracts** steps written in prose or **infers** plausible steps from the title, body, comments and linked PRs. Expected results are written only on the steps that check something, not on setup steps. Rows are marked `AI-extracted` or `AI-INFERRED` so testers know to verify them. If the change has no UI surface (refactor, tooling, server-only), the step area instead reads `NOT MANUALLY TESTABLE` with the reason, and Status is left for the tester to mark N/A. If the issue text gives the model nothing to work with, it reads `AI found no usable steps` so you can tell an attempted issue from an unattempted one. |
+| `--ai-triage` | For issues that land in the `Other` or `Unlabeled in tracked milestone` buckets of `x.md`, ask Claude whether they belong in the sheet (`INCLUDE`), are missing a label (`NEEDS_LABEL`), or are correctly excluded. Claude may run read-only `gh issue view` / `gh pr view` / `gh pr diff` to inspect linked PRs. Verdicts are written under each issue in `x.md`. |
+| `--ai-model MODEL` | Model alias or ID for `claude --model` (e.g. `sonnet`). Defaults to the CLI's default. |
+
+### Manual overrides (config file only)
+
+* Per sheet, `"addIssues": [1276]` forces those issue numbers onto that sheet even if they match no filter
+  (e.g. an issue that should have had the milestone but doesn't).
+* Top level, `"excludeIssues": ["iqtools#10683"]` drops repo-qualified issues from every sheet.
+
+Pull requests returned by the issues API are now always skipped.
+
+Results are cached in `ai_cache.json` (keyed by issue number and `updated_at`), so re-running
+does not re-pay for unchanged issues. Delete an entry or the file to regenerate.
+
+`x.md` also now has more deterministic buckets (`Verified`, `Invalid`, `No milestone`,
+`Closed before date cutoff`, `Label clash`, `Unlabeled in tracked milestone`) so that `Other`
+only holds issues that genuinely need a judgment call.
+
 ## Version
 
 This must be run on python 3.8 or above, because I used the Walrus operator.
